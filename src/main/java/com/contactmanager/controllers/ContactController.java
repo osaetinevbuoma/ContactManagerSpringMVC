@@ -182,8 +182,8 @@ public class ContactController {
             }
             
             try {
-                String filePath = "/absolute/path/to/upload/dir";
-                String filename = "/dir/" + contactId + ".jpg";
+                String filePath = "absolute/path/to/upload/dir";
+                String filename = "dir/" + contactId + ".jpg";
                 image.transferTo(new File(filePath + "/" + filename));
                 
                 Contact contact = contactRepository.findOne(contactId);
