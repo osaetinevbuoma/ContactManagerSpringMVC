@@ -1,0 +1,53 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd 
+        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd 
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <context:component-scan base-package="com.contactmanager"/>
+    <mvc:annotation-driven />
+    <mvc:resources mapping="/resources/**" location="/" />
+    <mvc:resources mapping="/uploads/**" location="classpath:com/contactmanager/uploads/" cache-period="0" />
+    
+    <!-- File upload functionality -->
+    <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver">
+        <property name="maxUploadSize" value="1000000" />
+    </bean>
+    
+    <!-- Tiles configuration -->
+    <bean class="org.springframework.web.servlet.view.tiles3.TilesViewResolver" id="tilesViewResolver" />
+    <bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer" id="tilesConfigurer">
+        <property name="definitions">
+            <list>
+                <value>/WEB-INF/views/layout/layout.xml</value>
+                <!-- Scan views directory for Tiles configuration -->
+                <value>/WEB-INF/views/**/views.xml</value>
+            </list>
+        </property>
+    </bean>
+    <!-- Tiles configuration ends -->
+    
+    <!-- JPA Configs start here -->
+    <jpa:repositories base-package="com.contactmanager.repository" />
+    
+    <bean class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean" id="entityManagerFactory">
+        <property name="persistenceUnitName" value="persistenceUnit" />
+    </bean>
+    
+    <bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    <!-- JPA Configs end here -->
+    
+    <!-- Hibernate Validation -->
+    <bean class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" id="validatorFactoryBean" />
+
+</beans>
