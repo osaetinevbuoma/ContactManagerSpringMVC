@@ -13,8 +13,13 @@
                 </c:if>
                 
                 <div class="image">
+                    <c:if test="${'/resources/images/default.png' == contact.image}">
                     <spring:url value="${contact.image}" var="imageUrl" htmlEscape="true" />
-                    <img src="${imageUrl}" class="img-responsive img-thumbnail">
+                        <img src="${imageUrl}" class="img-responsive img-thumbnail">
+                    </c:if>
+                    <c:if test="${'/resources/images/default.png' != contact.image}">
+                    <img src="<c:url value="/get-image/${contact.id}" />" class="img-responsive img-thumbnail">
+                    </c:if>
                     <br />
                 </div>
                 <form method="post" action="/contact/uploadImage/${contact.id}" enctype="multipart/form-data">

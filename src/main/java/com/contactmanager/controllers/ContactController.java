@@ -12,15 +12,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.GregorianCalendar;
 
 @Controller
 @Transactional
 @RequestMapping(value = {"/", "/contact"})
 public class ContactController {
+    private static final String uploadDir = "../ContactManagerUploads/";
+
     @Autowired
     private ContactRepository contactRepository;
     
@@ -181,13 +183,17 @@ public class ContactController {
                 return "redirect:/contact/details/" + contactId;
             }
             
+            File dir = new File(uploadDir);
+            if (!dir.isDirectory())
+                dir.mkdir();
+
+            File imagePath = new File(uploadDir + contactId + ".jpg");
+
             try {
-                String filePath = "absolute/path/to/upload/dir";
-                String filename = "dir/" + contactId + ".jpg";
-                image.transferTo(new File(filePath + "/" + filename));
+                image.transferTo(imagePath);
                 
                 Contact contact = contactRepository.findOne(contactId);
-                contact.setImage(filename);
+                contact.setImage(contactId + ".jpg");
                 contactRepository.save(contact);
 
                 return "redirect:/contact/details/" + contactId;
@@ -198,5 +204,35 @@ public class ContactController {
         
         redirectAttributes.addFlashAttribute("flashError", "Please upload a file");
         return "redirect:/contact/details/" + contactId;
+    }
+
+    /**
+     * Stream image files to browser
+     * @param contactId
+     * @param httpServletResponse
+     */
+    @RequestMapping(value = "/get-image/{contactId}", method = RequestMethod.GET)
+    public void getImage(@PathVariable Long contactId, HttpServletResponse httpServletResponse) {
+        Contact contact = contactRepository.findOne(contactId);
+        File file = new File(uploadDir + contact.getImage());
+
+        try {
+            InputStream inputStream = new FileInputStream(file);
+            byte[] bytes = new byte[1024];
+            int bytesRead;
+
+            httpServletResponse.setHeader("Content-Disposition", "attachment; filename='" + contact.getImage() + "'");
+            OutputStream outputStream = httpServletResponse.getOutputStream();
+
+            while (0 < (bytesRead = inputStream.read(bytes))) {
+                outputStream.write(bytes, 0, bytesRead);
+            }
+
+            outputStream.close();
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
